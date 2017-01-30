@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The HackParser handles parsing the assembly code and uses the MachineCoder to help figure out what the machine code
+ * translation is. The parser stores a map of variables and their memory addresses as well as symbols and their jump to
+ * addresses.
  * Created by michaelmeyer on 1/29/17.
  */
 public class HackParser {
@@ -18,14 +21,26 @@ public class HackParser {
     private int storageCounter = 16;
     private MachineCoder coder;
 
+    /**
+     * Instantiates a new Hack parser. A MachineCoder must be provided to a parser at instantiation.
+     *
+     * @param coder the coder
+     */
     public HackParser(MachineCoder coder) {
         initMemoryMap();
         this.coder = coder;
     }
 
+    /**
+     * Parse to binary string. After symbols have been accounted for, this method can be used to translate the assembly
+     * code into a binary code.
+     *
+     * @param command the command
+     * @return the binary string
+     */
     public String parseToBinaryString(String command) {
         if (command.matches("@[0-9]+")) {
-            // numeric command, so get the binary
+            // numeric command, so get the binary translation
             Integer number = Integer.parseInt(command.substring(1, command.length()));
             return convertDecimalToBinary(number);
         } else if (command.startsWith("@")) {
@@ -36,7 +51,6 @@ public class HackParser {
                 memoryMap.put(varName, storageCounter);
                 storageCounter++;
             }
-            System.out.println("Memory value of " + varName + " is " + memoryValue);
             return convertDecimalToBinary(memoryValue);
         } else {
             // else it is an instruction
@@ -44,14 +58,24 @@ public class HackParser {
         }
     }
 
+    /**
+     * Given a list of code that still has symbols, this method will remove and store symbols in a map in the parser.
+     * It is important that this method is invoked before any calls to parseToBinaryString
+     *
+     * @param fileLines the file lines to have symbols removed from
+     * @return the symbol-free list
+     */
     public List<String> removeAndStoreSymbols(List<String> fileLines) {
         List<String> noSymbolsList = new ArrayList<>();
+        // keep track of a marker that marks the "cleaned" list's index position
         int symbolMarker = 0;
         for (int i = 0; i < fileLines.size(); i++) {
             if (fileLines.get(i).matches(SYMBOL_REGEX)) {
+                // add the symbol to our memory map with value of symbolMarker for using in code later
                 String entry = fileLines.get(i).replaceAll(SYMBOL_REGEX, "${varName}");
                 memoryMap.put(entry, symbolMarker);
             } else {
+                // keeping this code, so add it and increment the symbol marker
                 noSymbolsList.add(fileLines.get(i));
                 symbolMarker++;
             }
@@ -59,6 +83,10 @@ public class HackParser {
         return noSymbolsList;
     }
 
+    /*
+        Using regex's for the type of instruction, this will parse an instruction and ask the MachineCoder to give its
+        binary translation
+     */
     private String parseInstruction(String instruction) {
         boolean hasEquals = instruction.contains("=");
         boolean hasJump = instruction.contains(";");
@@ -86,6 +114,9 @@ public class HackParser {
         }
     }
 
+    /*
+        Helper method to convert a decimal value to a 16 bit binary string
+     */
     private String convertDecimalToBinary(int decimal) {
         String binaryString = Integer.toBinaryString(decimal);
         int bitsToFill = 16 - binaryString.length();
@@ -96,6 +127,9 @@ public class HackParser {
         return bitString.concat(binaryString);
     }
 
+    /*
+        Initial loading of the memory map with constant HACK memory values
+     */
     private void initMemoryMap() {
         memoryMap.put("R0", 0);
         memoryMap.put("R1", 1);

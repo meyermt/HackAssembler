@@ -11,26 +11,39 @@ import java.util.stream.Collectors;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 /**
+ * Main driver for the HACK Assembler program. Accepts one file with .asm extension as input and outputs a machine language
+ * output file with a .hack extension.
  * Created by michaelmeyer on 1/29/17.
  */
 public class Main {
 
+    /**
+     * The entry point of application. The main method will drive the program through to completion. It works with a
+     * HackParser (which in turn will work with a MachineCoder) to translate human readable HACK assembly code to
+     * machine language byte code.
+     *
+     * @param args the input arguments. Must be an assembly language file with .asm extension.
+     */
     public static void main(String[] args) {
+        // read in the file and remove whitespace
         Path inputPath = Paths.get(args[0]);
         String fileName = inputPath.getFileName().toString();
-
         List<String> cleanFileLines = removeWSComments(readFile(inputPath, fileName));
+
         MachineCoder coder = new MachineCoder();
         HackParser parser = new HackParser(coder);
+        // Use the parser to remove and store symbols first, then stream over and parse to binary strings
         List<String> machineOutput = parser.removeAndStoreSymbols(cleanFileLines).stream()
-                .peek(line -> System.out.println("line going in is: " + line))
                 .map(line -> parser.parseToBinaryString(line))
-                .peek(line -> System.out.println("new line is: " + line))
                 .collect(Collectors.toList());
 
+        // write out the binary strings
         writeOutput(machineOutput, inputPath, fileName);
     }
 
+    /*
+        Reads the file. Will exit the program if IOException encountered or file is not of .asm extension
+     */
     private static List<String> readFile(Path inputPath, String fileName) {
         // if the filename doesn't have the .in extension we will exit with helpful message
         if (!fileName.endsWith(".asm")) {
@@ -48,6 +61,9 @@ public class Main {
         return null;
     }
 
+    /*
+        Removes whitespace, blank lines, and comments from code
+     */
     private static List<String> removeWSComments(List<String> fileLines) {
             return fileLines.stream()
                     // remove all whitespace
@@ -61,6 +77,9 @@ public class Main {
                     .collect(Collectors.toList());
     }
 
+    /*
+        Writes output to a file with .hack extension. Will truncate/write over existing .hack files if there
+     */
     private static void writeOutput(List<String> machineOutput, Path inputPath, String fileName) {
         // create the output file
         try {
