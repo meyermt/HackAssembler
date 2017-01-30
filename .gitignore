@@ -2,6 +2,8 @@
 # IntelliJ project files
 .idea
 *.iml
+*.asm
+*.hack
 out
 gen
 bin/*

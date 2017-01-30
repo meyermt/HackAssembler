@@ -11,12 +11,10 @@ import java.util.Map;
 public class HackParser {
 
     private Map<String, Integer> memoryMap = new HashMap<>();
-    private static final String symbolRegEx = "\\((?<varName>.+)\\)";
-    private static final String destCompJumpRegEx = "(?<dest>)=(?<comp>);(?<jump>)";
-    private static final String destJumpRegEx = "(?<dest>);(?<jump>)";
-    private static final String destCompRegEx = "(?<dest>)=(?<comp>)";
-    private static final String nullJmpDest = "000";
-    private static final String nonComp = "111110";
+    private static final String SYMBOL_REGEX = "\\((?<varName>.+)\\)";
+    private static final String DEST_COMP_JUMP_REGEX = "(?<dest>.+)=(?<comp>.+);(?<jump>.+)";
+    private static final String COMP_JUMP_REGEX = "(?<comp>.+);(?<jump>.+)";
+    private static final String DEST_COMP_REGEX = "(?<dest>.+)=(?<comp>.+)";
     private int storageCounter = 16;
     private MachineCoder coder;
 
@@ -32,12 +30,13 @@ public class HackParser {
             return convertDecimalToBinary(number);
         } else if (command.startsWith("@")) {
             // else we have a variable, either stored or needing storing
-            String varName = command.substring(1, command.length() - 1);
+            String varName = command.substring(1, command.length());
             int memoryValue = memoryMap.getOrDefault(varName, storageCounter);
             if (memoryValue == storageCounter) {
                 memoryMap.put(varName, storageCounter);
                 storageCounter++;
             }
+            System.out.println("Memory value of " + varName + " is " + memoryValue);
             return convertDecimalToBinary(memoryValue);
         } else {
             // else it is an instruction
@@ -49,8 +48,8 @@ public class HackParser {
         List<String> noSymbolsList = new ArrayList<>();
         int symbolMarker = 0;
         for (int i = 0; i < fileLines.size(); i++) {
-            if (fileLines.get(i).matches(symbolRegEx)) {
-                String entry = fileLines.get(i).replaceAll(symbolRegEx, "${varName}");
+            if (fileLines.get(i).matches(SYMBOL_REGEX)) {
+                String entry = fileLines.get(i).replaceAll(SYMBOL_REGEX, "${varName}");
                 memoryMap.put(entry, symbolMarker);
             } else {
                 noSymbolsList.add(fileLines.get(i));
@@ -64,31 +63,32 @@ public class HackParser {
         boolean hasEquals = instruction.contains("=");
         boolean hasJump = instruction.contains(";");
         if (hasEquals && hasJump) {
-            // eg dest=comp;jump
-            String dest = instruction.replaceAll(destCompJumpRegEx, "${dest}");
-            String comp = instruction.replaceAll(destCompJumpRegEx, "${comp}");
-            String jump = instruction.replaceAll(destCompJumpRegEx, "${jump}");
+            // i.e., dest=comp;jump
+            String dest = instruction.replaceAll(DEST_COMP_JUMP_REGEX, "${dest}");
+            String comp = instruction.replaceAll(DEST_COMP_JUMP_REGEX, "${comp}");
+            String jump = instruction.replaceAll(DEST_COMP_JUMP_REGEX, "${jump}");
             return coder.getInstructionBin(comp) + coder.getCompBin(comp) + coder.getDestBin(dest) + coder.getJumpBin(jump);
         } else if (hasEquals) {
-            // eg dest=comp
-            String dest = instruction.replaceAll(destCompRegEx, "${dest}");
-            String comp = instruction.replaceAll(destCompRegEx, "${comp}");
-            return coder.getInstructionBin(comp) + coder.getCompBin(comp) + coder.getDestBin(dest) + nullJmpDest;
+            // i.e., dest=comp
+            String dest = instruction.replaceAll(DEST_COMP_REGEX, "${dest}");
+            String comp = instruction.replaceAll(DEST_COMP_REGEX, "${comp}");
+            System.out.println("looking up dest: " + dest);
+            System.out.println("looking up comp: " + comp);
+            return coder.getInstructionBin(comp) + coder.getCompBin(comp) + coder.getDestBin(dest) + MachineCoder.NULL_BIN;
         } else if (hasJump) {
-            // eg dest;jump
-            String dest = instruction.replaceAll(destJumpRegEx, "${dest}");
-            String jump = instruction.replaceAll(destJumpRegEx, "${jump}");
-            return "1110" + nonComp + coder.getDestBin(dest) + coder.getJumpBin(jump);
+            // i.e., comp;jump
+            String comp = instruction.replaceAll(COMP_JUMP_REGEX, "${comp}");
+            String jump = instruction.replaceAll(COMP_JUMP_REGEX, "${jump}");
+            return MachineCoder.A_COMP_BIN + coder.getCompBin(comp) + MachineCoder.NULL_BIN + coder.getJumpBin(jump);
         } else {
             // else it is just a computation
-            return coder.getInstructionBin(instruction) + coder.getCompBin(instruction) + nullJmpDest + nullJmpDest;
+            return coder.getInstructionBin(instruction) + coder.getCompBin(instruction) + MachineCoder.NULL_BIN + MachineCoder.NULL_BIN;
         }
     }
 
     private String convertDecimalToBinary(int decimal) {
         String binaryString = Integer.toBinaryString(decimal);
-        int bits = Integer.bitCount(decimal);
-        int bitsToFill = 16 - bits;
+        int bitsToFill = 16 - binaryString.length();
         String bitString = "";
         for (int i = 0; i < bitsToFill; i++) {
             bitString = bitString + "0";

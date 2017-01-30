@@ -15,11 +15,11 @@ public class MachineCoder {
     // code values of destinations and a few computations
     public static final String M = "M";
     public static final String D = "D";
-    public static final String MD = "MD";
+    public static final String MD = "MD", DM = "DM";
     public static final String A = "A";
-    public static final String AM = "AM";
-    public static final String AD = "AD";
-    public static final String AMD = "AMD";
+    public static final String AM = "AM", MA = "MA";
+    public static final String AD = "AD", DA = "DA";
+    public static final String AMD = "AMD", ADM = "ADM", DMA = "DMA", DAM = "DAM", MAD = "MAD", MDA = "MDA";
 
     // code values of jumps
     public static final String JGT = "JGT";
@@ -50,22 +50,22 @@ public class MachineCoder {
     public static final String NEG_D = "-D";
     public static final String NEG_A = "-A";
     public static final String NEG_M = "-M";
-    public static final String D_PLUS_1 = "D+1";
-    public static final String A_PLUS_1 = "A+1";
-    public static final String M_PLUS_1 = "M+1";
+    public static final String D_PLUS_1 = "D+1", ONE_PLUS_D = "1+D";
+    public static final String A_PLUS_1 = "A+1", ONE_PLUS_A = "1+A";
+    public static final String M_PLUS_1 = "M+1", ONE_PLUS_M = "1+M";
     public static final String D_MINUS_1 = "D-1";
     public static final String A_MINUS_1 = "A-1";
     public static final String M_MINUS_1 = "M-1";
-    public static final String D_PLUS_A = "D+A";
-    public static final String D_PLUS_M = "D+M";
+    public static final String D_PLUS_A = "D+A", A_PLUS_D = "A+D";
+    public static final String D_PLUS_M = "D+M", M_PLUS_D = "M+D";
     public static final String D_MINUS_A = "D-A";
     public static final String D_MINUS_M = "D-M";
     public static final String A_MINUS_D = "A-D";
     public static final String M_MINUS_D = "M-D";
-    public static final String D_AND_A = "D&A";
-    public static final String D_AND_M = "D&M";
-    public static final String D_OR_A = "D|A";
-    public static final String D_OR_M = "D|M";
+    public static final String D_AND_A = "D&A", A_AND_D = "1+D";;
+    public static final String D_AND_M = "D&M", M_AND_D = "1+D";;
+    public static final String D_OR_A = "D|A", A_OR_D = "1+D";
+    public static final String D_OR_M = "D|M", M_OR_D = "1+D";
 
     // binary mappings for computations
     public static final String ZERO_BIN = "101010";
@@ -87,6 +87,7 @@ public class MachineCoder {
     public static final String D_AND_A_M_BIN = "000000";
     public static final String D_OR_A_M_BIN = "010101";
 
+    // instruction mappings
     public static final String M_COMP_BIN = "1111";
     public static final String A_COMP_BIN = "1110";
 
@@ -112,7 +113,8 @@ public class MachineCoder {
         if (computation.equals(M) || computation.equals(NOT_M) || computation.equals(NEG_M)
                 || computation.equals(M_PLUS_1) || computation.equals(M_MINUS_1) || computation.equals(D_PLUS_M)
                 || computation.equals(D_MINUS_M) || computation.equals(M_MINUS_D) || computation.equals(D_AND_M)
-                || computation.equals(D_OR_M)) {
+                || computation.equals(D_OR_M) || computation.equals(ONE_PLUS_M) || computation.equals(M_PLUS_D)
+                || computation.equals(M_AND_D) || computation.equals(M_OR_D)) {
             return M_COMP_BIN;
         } else {
             return A_COMP_BIN;
@@ -123,10 +125,18 @@ public class MachineCoder {
         destMap.put(M, M_JGT_BIN);
         destMap.put(D, D_JEQ_BIN);
         destMap.put(MD, MD_JGE_BIN);
+        destMap.put(DM, MD_JGE_BIN);
         destMap.put(A, A_JLT_BIN);
         destMap.put(AM, AM_JNE_BIN);
+        destMap.put(MA, AM_JNE_BIN);
         destMap.put(AD, AD_JLE_BIN);
+        destMap.put(DA, AD_JLE_BIN);
         destMap.put(AMD, AMD_JMP_BIN);
+        destMap.put(ADM, AMD_JMP_BIN);
+        destMap.put(DAM, AMD_JMP_BIN);
+        destMap.put(DMA, AMD_JMP_BIN);
+        destMap.put(MAD, AMD_JMP_BIN);
+        destMap.put(MDA, AMD_JMP_BIN);
         destMap.put(ZERO, NULL_BIN);
     }
 
@@ -156,11 +166,16 @@ public class MachineCoder {
         compMap.put(D_PLUS_1, D_PLUS_ONE_BIN);
         compMap.put(A_PLUS_1, A_M_PLUS_ONE_BIN);
         compMap.put(M_PLUS_1, A_M_PLUS_ONE_BIN);
+        compMap.put(ONE_PLUS_D, D_PLUS_ONE_BIN);
+        compMap.put(ONE_PLUS_A, A_M_PLUS_ONE_BIN);
+        compMap.put(ONE_PLUS_M, A_M_PLUS_ONE_BIN);
         compMap.put(D_MINUS_1, D_MINUS_ONE_BIN);
         compMap.put(A_MINUS_1, A_M_MINUS_ONE_BIN);
         compMap.put(M_MINUS_1, A_M_MINUS_ONE_BIN);
         compMap.put(D_PLUS_A, D_PLUS_A_M_BIN);
         compMap.put(D_PLUS_M, D_PLUS_A_M_BIN);
+        compMap.put(A_PLUS_D, D_PLUS_A_M_BIN);
+        compMap.put(M_PLUS_D, D_PLUS_A_M_BIN);
         compMap.put(D_MINUS_A, D_MINUS_A_M_BIN);
         compMap.put(D_MINUS_M, D_MINUS_A_M_BIN);
         compMap.put(A_MINUS_D, A_M_MINUS_D_BIN);
@@ -169,5 +184,9 @@ public class MachineCoder {
         compMap.put(D_AND_M, D_AND_A_M_BIN);
         compMap.put(D_OR_A, D_OR_A_M_BIN);
         compMap.put(D_OR_M, D_OR_A_M_BIN);
+        compMap.put(A_AND_D, D_AND_A_M_BIN);
+        compMap.put(M_AND_D, D_AND_A_M_BIN);
+        compMap.put(A_OR_D, D_OR_A_M_BIN);
+        compMap.put(M_OR_D, D_OR_A_M_BIN);
     }
 }
