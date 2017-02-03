@@ -45,7 +45,7 @@ public class Main {
         Reads the file. Will exit the program if IOException encountered or file is not of .asm extension
      */
     private static List<String> readFile(Path inputPath, String fileName) {
-        // if the filename doesn't have the .in extension we will exit with helpful message
+        // if the filename doesn't have the .asm extension we will exit with helpful message
         if (!fileName.endsWith(".asm")) {
             System.out.println("Only able to read files with .asm extension. Please rename file and try again.");
             System.exit(1);
@@ -88,7 +88,9 @@ public class Main {
             Path outputPath = Paths.get(outputDir, outputFileName);
             Files.write(outputPath, machineOutput, Charset.defaultCharset());
         } catch (IOException e) {
-
+            System.out.println("Issue encountered writing output file for: " + fileName);
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
