@@ -45,7 +45,7 @@ public class AsmFileReader {
     /*
         Reads the file. Will exit the program if IOException encountered or file is not of .asm extension
     */
-    private static List<String> readFile(Path inputPath) {
+    private List<String> readFile(Path inputPath) {
         // if the filename doesn't have the .asm extension we will exit with helpful message
         if (!inputPath.toString().endsWith(".asm")) {
             System.out.println("Only able to read files with .asm extension. Please rename file and try again.");
@@ -65,7 +65,7 @@ public class AsmFileReader {
     /*
         Removes whitespace, blank lines, and comments from code
     */
-    private static List<String> removeWSComments(List<String> fileLines) {
+    private List<String> removeWSComments(List<String> fileLines) {
         return fileLines.stream()
                 // remove all whitespace
                 .map(whiteful -> whiteful.replaceAll(" ", ""))
