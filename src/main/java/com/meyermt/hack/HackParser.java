@@ -100,8 +100,6 @@ public class HackParser {
             // i.e., dest=comp
             String dest = instruction.replaceAll(DEST_COMP_REGEX, "${dest}");
             String comp = instruction.replaceAll(DEST_COMP_REGEX, "${comp}");
-            System.out.println("looking up dest: " + dest);
-            System.out.println("looking up comp: " + comp);
             return coder.getInstructionBin(comp) + coder.getCompBin(comp) + coder.getDestBin(dest) + MachineCoder.NULL_BIN;
         } else if (hasJump) {
             // i.e., comp;jump
