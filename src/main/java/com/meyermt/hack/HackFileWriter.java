@@ -32,7 +32,7 @@ public class HackFileWriter {
      *
      * @param machineCode the machine code to write out
      */
-/*
+    /*
         Writes output to a file with .hack extension. Will truncate/write over existing .hack files if there
     */
     public void writeHackFile(List<String> machineCode) {
